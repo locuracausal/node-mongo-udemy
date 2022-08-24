@@ -10,7 +10,12 @@ module.exports.ProductsAPI = (app) => {
     router
         .post('/', jsonParser, ProductsController.createProduct)
         .get('/', ProductsController.getProducts)
+        .put('/',jsonParser, ProductsController.updateProduct)
+        .get('/reports', ProductsController.generateReport)
         .get('/:id',  ProductsController.getProduct)
+        // update 
+        // delete
+        
         
     app.use('/api/products', router);
 }

@@ -44,6 +44,30 @@ module.exports.ProductsController = {
             Response.error()
         }
         // res.send('createProduct')
+    }, generateReport: async (req, res) => {
+        try {
+            ProductsService.generateReport('Inventario', res)
+        } catch (error) {
+            debug('Algo anda mal', error);
+            Response.error()
+        }
+    },
+    updateProduct: async (req, res) => {
+        try {
+            debug('Updating product', req.headers);
+            const {body} = req
+            debug('Body', body);
+            if (!body || Object.keys(body).length === 0) Response.error(res, new createError.BadRequest())  
+            
+            let product = await ProductsService.update(req.body);
+            res.status(200).json({product})
+        } catch (error) {
+            debug('Algo anda mal', error);
+            Response.error()
+        }
     }
+
+    //Update product
+    // Delete
 
 }
