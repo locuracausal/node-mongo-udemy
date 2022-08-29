@@ -13,7 +13,7 @@ module.exports.ProductsController = {
             Response.success(res, 200, 'Producto ' + req.params.id, product)
             // res.json( product)
         } catch (error) {
-            debug('Algo anda mal', error);
+            debug('Error getProduct', error);
             // res.status(500).json({error: error})
             Response.error()
         }
@@ -22,11 +22,9 @@ module.exports.ProductsController = {
     getProducts: async (req, res) => {
         try {
             let products = await ProductsService.getAll();
-            // return products
             Response.success(res, 200, 'Lista de productos', products)
-            res.status(200).json({products})
         } catch (error) {
-            debug('Algo anda mal', error);
+            debug('Error getProducts', error);
             Response.error()
         }
        // res.send('getProduct')
@@ -40,7 +38,7 @@ module.exports.ProductsController = {
             let product = await ProductsService.create(req.body);
             res.status(200).json({product})
         } catch (error) {
-            debug('Algo anda mal', error);
+            debug('Error createProducts', error);
             Response.error()
         }
         // res.send('createProduct')
@@ -48,7 +46,7 @@ module.exports.ProductsController = {
         try {
             ProductsService.generateReport('Inventario', res)
         } catch (error) {
-            debug('Algo anda mal', error);
+            debug('Error generateReport', error);
             Response.error()
         }
     },
@@ -62,7 +60,32 @@ module.exports.ProductsController = {
             let product = await ProductsService.update(req.body);
             res.status(200).json({product})
         } catch (error) {
-            debug('Algo anda mal', error);
+            debug('Error updateProduct', error);
+            Response.error()
+        }
+    },
+    deleteProduct: async (req, res) => {
+        try {
+            debug('Deleting product', req.params.id);
+            const id = req.params.id
+            let message = await ProductsService.deleteById(id);
+            // res.status(200).json({product})
+            Response.success(res, 200, message)
+        } catch (error) {
+            debug('Error deleteProduct', error);
+            Response.error()
+        }
+    },
+    deleteProductsByParameters: async (req, res) => {
+        try {
+            debug('Deleting product', req.body)
+            const { body } = req
+            let message = await ProductsService.deleteByParameter(body);
+            Response.success(res, 200, message)
+
+        }
+        catch {
+            debug('Error deleteProductsByParameters', error);
             Response.error()
         }
     }
