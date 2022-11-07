@@ -8,18 +8,28 @@ const { ProductsService} = require('../Productos/services')
 // const {UsersController} = require('../Usuarios/controller');
 
 
+async function validateProductSale (res, product) {
+        const productByDB = await ProductsService.getById(product.id)
+        if (!productByDB) Response.error(res, new createError.BadRequest('No existe producto en base de datos'))
+        debug('productByDB.stock < product.quantity', productByDB.stock < product.quantity)
+        debug('Return del validate products', ( productByDB.stock < product.quantity) )
+        return (productByDB.stock && product.quantity && productByDB.stock < product.quantity)   
+    
+}
+
+
 module.exports.SalesController = {
     getSale: async (req, res) => {
         try {
             let sale = await SalesService.getById(req.params.id);
             if (!sale)
                 Response.error(res, new createError.NotFound)
-            Response.success(res, 200, 'Saleo ' + req.params.id, sale)
+            Response.success(res, 200, 'Sales ' + req.params.id, sale)
             // res.json( Sale)
         } catch (error) {
             debug('Error getSale', error);
             // res.status(500).json({error: error})
-            Response.error()
+            Response.error() 
         }
         // res.send('getAll');
     },
@@ -39,26 +49,35 @@ module.exports.SalesController = {
         try {
             debug('Creating Sale', req.headers);
             const {body} = req
-            const {userId, productId} = body
-            debug('User id', userId.id)
-            debug('ProductId id', productId.id)
-            const userByDB = await UsersService.getById(userId.id)
-            const productByDB = await ProductsService.getById(productId.id)
+            const {userId, products} = body
+            debug('User id', userId)
+            debug('Product list', products)
+            const userByDB = await UsersService.getById(userId)
+            if (!userByDB)  throw new Error({message: 'User not found'})
+            if (!body || Object.keys(body).length === 0 || products.length === 0) return Response.error(res, new createError.BadRequest('Antes de validate', 'error.message'))
+            let validate = true
+            products.forEach(async (product) => {
+                const check = await validateProductSale(res, product)
+                debug ('Check', check)
+                if (!check){
+                    validate = false
+                    return Response.error(res, new createError.BadRequest('Problemas de stock'))
+                }  
+ 
+            })
             debug('Usuario existe', userByDB)
-            if (productByDB) 
-            if (!body || Object.keys(body).length === 0 || !userByDB || !productId) Response.error(res, new createError.BadRequest('No existe body, product o user'))  
-            if (!userByDB)  Response.error(res, new createError.BadRequest('No existe usuario en base de datos'))
-            if (!productByDB) Response.error(res, new createError.BadRequest('No existe producto en base de datos'))
 
             // Falta validar stock y restarlo una vez realizada la venta
             let sale = await SalesService.create(req.body);
-            res.status(200).json({sale})
+            if (validate)
+                res.status(200).json({sale})
         } catch (error) {
             debug('Error createSales', error);
-            Response.error(res, new createError.BadRequest('Algo raro paso', error.message))
+            Response.error(res, new createError.BadRequest('Salimos por el catch', error.message))
         }
         // res.send('createSale')
-    }, generateReport: async (req, res) => {
+    },
+     generateReport: async (req, res) => {
         try {
             SalesService.generateReport('Inventario', res)
         } catch (error) {
@@ -105,7 +124,7 @@ module.exports.SalesController = {
             Response.error()
         }
     }
-
+    
     //Update Sale
     // Delete
 

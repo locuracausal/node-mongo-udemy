@@ -16,10 +16,8 @@ module.exports.SalesAPI = (app) => {
         .delete('/', jsonParser, SalesController.deleteSalesByParameters)
         .get('/reports', SalesController.generateReport)
         
-        
         // update 
         // delete
-        
         
     app.use('/api/sales', router);
 }
